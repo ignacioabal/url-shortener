@@ -174,15 +174,26 @@ class UrlShortenerControllerImplTest {
     @DisplayName("Tests for getUrl Method")
     class getUrl {
         @Test
-        void shouldRedirectIfAliasExistsInDB() {
-            //TODO
+        void shouldRedirectIfAliasExistsInDB() throws Exception {
+            String mockUrl = "www.google.com";
+
+            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenReturn(mockUrl);
+
+            mockMvc.perform(get("/abcd1234")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isPermanentRedirect());
         }
 
         @Test
-        void shouldReturnNotFoundIfResourceNotFound() {
-            //TODO
-        }
+        void shouldReturnNotFoundIfResourceNotFound() throws Exception {
 
+
+            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenReturn(null);
+
+            mockMvc.perform(get("/abcd1234")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound());
+        }
 
     }
 }

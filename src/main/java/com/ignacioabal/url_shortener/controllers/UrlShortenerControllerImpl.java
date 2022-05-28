@@ -48,6 +48,7 @@ public class UrlShortenerControllerImpl implements UrlShortenerController {
         String redirectUrl = "https://" + url;
 
         redirectView.setUrl(redirectUrl);
+        redirectView.setStatusCode(HttpStatus.PERMANENT_REDIRECT);
 
         return redirectView;
     }
