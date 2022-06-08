@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.view.RedirectView;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -176,8 +177,10 @@ class UrlShortenerControllerImplTest {
         @Test
         void shouldRedirectIfAliasExistsInDB() throws Exception {
             String mockUrl = "www.google.com";
+            RedirectView mockRedirectView = new RedirectView(mockUrl);
+            mockRedirectView.setStatusCode(HttpStatus.PERMANENT_REDIRECT);
 
-            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenReturn(mockUrl);
+            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenReturn(mockRedirectView);
 
             mockMvc.perform(get("/abcd1234")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -188,7 +191,7 @@ class UrlShortenerControllerImplTest {
         void shouldReturnNotFoundIfResourceNotFound() throws Exception {
 
 
-            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenReturn(null);
+            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "No URL Found."));
 
             mockMvc.perform(get("/abcd1234")
                             .contentType(MediaType.APPLICATION_JSON))

@@ -2,6 +2,7 @@ package com.ignacioabal.url_shortener.services;
 
 import com.ignacioabal.url_shortener.models.UrlAlias;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.view.RedirectView;
 
 public interface UrlShortenerService {
 
@@ -11,6 +12,6 @@ public interface UrlShortenerService {
 
     ResponseEntity<UrlAlias> modifyUrl(String alias, UrlAlias Url);
 
-    String getUrl(String alias);
+    RedirectView getUrl(String alias);
 
 }
