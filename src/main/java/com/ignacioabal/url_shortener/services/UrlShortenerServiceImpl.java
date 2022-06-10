@@ -36,25 +36,29 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
 
     @Override
     public ResponseEntity<UrlAlias> deleteUrl(String alias) {
-        try {
-            urlShortenerRepository.deleteUrlByAlias(alias);
-        } catch (ResponseStatusException e) {
+        if (!urlShortenerRepository.existsByAlias(alias)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+        urlShortenerRepository.deleteUrlByAlias(alias);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<UrlAlias> modifyUrl(String alias, UrlAlias newUrl) {
-        Optional<UrlAlias> existingUrlAlias = urlShortenerRepository.findUrlByAlias(alias);
+        Optional<UrlAlias> optionalUrlAlias = urlShortenerRepository.findUrlByAlias(alias);
 
-        if (existingUrlAlias.isPresent()) {
-            existingUrlAlias.get().setUrl(newUrl.getUrl());
-            urlShortenerRepository.save(existingUrlAlias.get());
-            return new ResponseEntity<>(existingUrlAlias.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (optionalUrlAlias.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+
+        UrlAlias existingUrlAlias = optionalUrlAlias.get();
+
+        existingUrlAlias.setUrl(newUrl.getUrl());
+        urlShortenerRepository.save(existingUrlAlias);
+        return new ResponseEntity<>(existingUrlAlias, HttpStatus.OK);
+
     }
 
 
@@ -62,13 +66,13 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
     public RedirectView getUrl(String alias) {
         Optional<UrlAlias> urlAlias = urlShortenerRepository.findUrlByAlias(alias);
 
-        if (urlAlias.isPresent()) {
-            RedirectView redirectView = new RedirectView(urlAlias.get().getUrl());
-            redirectView.setStatusCode(HttpStatus.PERMANENT_REDIRECT);
-            return redirectView;
-        } else {
+        if (urlAlias.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No URL Found.");
         }
+
+        RedirectView redirectView = new RedirectView(urlAlias.get().getUrl());
+        redirectView.setStatusCode(HttpStatus.PERMANENT_REDIRECT);
+        return redirectView;
     }
 
     private String generateAlias() {
