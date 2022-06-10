@@ -3,16 +3,22 @@ package com.ignacioabal.url_shortener.services;
 import com.ignacioabal.url_shortener.models.UrlAlias;
 import com.ignacioabal.url_shortener.repositories.UrlShortenerRepository;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class UrlShortenerServiceImplTest extends UrlShortenerServiceImpl {
@@ -23,24 +29,11 @@ class UrlShortenerServiceImplTest extends UrlShortenerServiceImpl {
     @MockBean
     UrlShortenerRepository urlShortenerRepository;
 
-
-    @BeforeEach
-    void setUp() {
-        String mockUrl = "www.google.com";
-        String mockAlias = "abcd1234";
-
-        UrlAlias urlAlias = new UrlAlias(mockUrl, mockAlias);
-
-
-    }
-
-
-
     @Nested
-    class createUrlTests{
+    class createUrlTests {
 
         @Test
-        void shouldCreateUrlIfItDoesNotExist() {
+        void shouldReturnValidObjectIfCreated() {
             String mockUrl = "www.google.com";
             String mockAlias = "abcd1234";
 
@@ -54,46 +47,99 @@ class UrlShortenerServiceImplTest extends UrlShortenerServiceImpl {
 
 
             assert returnedUrlAlias != null;
-            Assertions.assertEquals(mockUrlAlias.getUrl(), returnedUrlAlias.getUrl());
+            assertEquals(mockUrlAlias.getUrl(), returnedUrlAlias.getUrl());
             Assertions.assertNotNull(returnedUrlAlias.getAlias());
         }
 
         @Test
-        void shouldThrowExceptionIfResourceAlreadyExists() {
-            UrlShortenerService spyUrlShortenerService = Mockito.spy(urlShortenerService);
-
-
+        void shouldRegenerateAliasIfAliasAlreadyExists() {
             String mockUrl = "www.google.com";
+            UrlAlias mockUrlAlias = new UrlAlias(mockUrl);
+
+            when(urlShortenerRepository.existsByAlias(Mockito.anyString())).thenReturn(true);
+            when(urlShortenerRepository.existsByAlias(Mockito.anyString())).thenReturn(true);
+            when(urlShortenerRepository.existsByAlias(Mockito.anyString())).thenReturn(false);
+
+            assertEquals(HttpStatus.CREATED, urlShortenerService.createUrl(mockUrlAlias).getStatusCode());
+
+            verify(urlShortenerRepository).save(Mockito.any(UrlAlias.class));
+        }
+
+    }
+
+    @Nested
+    class deleteUrlTests {
+
+        @Test
+        void shouldCallDeleteByUrlRepositoryMethod() {
             String mockAlias = "abcd1234";
-            Optional<UrlAlias> emptyUrlAliasOptional = Optional.empty();
+            when(urlShortenerRepository.existsByAlias(mockAlias)).thenReturn(true);
 
-            UrlAlias alreadyExistingMockUrlAlias = new UrlAlias(mockUrl, mockAlias);
-            UrlAlias inputMockUrlAlias = new UrlAlias(mockUrl);
+            urlShortenerService.deleteUrl(mockAlias);
 
-
-            Mockito.when(urlShortenerRepository.existsByAlias(mockAlias)).thenReturn(true).thenReturn(false);
-
-
-            //TODO
+            verify(urlShortenerRepository, times(1)).deleteUrlByAlias(mockAlias);
+        }
 
 
+        @Test
+        void shouldReturnOkStatusIfFoundAndDeleted() {
+            String mockAlias = "abcd1234";
+
+            doNothing().when(urlShortenerRepository).deleteUrlByAlias(mockAlias);
+            when(urlShortenerRepository.existsByAlias(mockAlias)).thenReturn(true);
+
+            ResponseEntity<UrlAlias> responseEntity = urlShortenerService.deleteUrl(mockAlias);
+
+            assertEquals(responseEntity, new ResponseEntity<UrlAlias>(HttpStatus.OK));
+        }
+
+        @Test
+        void shouldThrowNotFoundStatusIfAliasIsNotFound() {
+            String mockAlias = "abcd1234";
+
+            when(urlShortenerRepository.existsByAlias(mockAlias)).thenReturn(false);
+
+            assertThrows(ResponseStatusException.class, () -> urlShortenerService.deleteUrl(mockAlias));
+
+        }
+    }
+
+    @Nested
+    class modifyUrlTests {
+        @Test
+        void shouldCallRepositorySaveAndReturnOkStatusIfObjectExists() {
+            String mockAlias = "abcd1234";
+            String mockUrl = "www.google.com";
+            String mockModifiedUrl = "www.yahoo.com";
+
+            UrlAlias mockUrlAlias = new UrlAlias(mockUrl, mockAlias);
+            UrlAlias mockModifiedUrlAlias = new UrlAlias(mockModifiedUrl, mockAlias);
+
+
+            when(urlShortenerRepository.findUrlByAlias(mockAlias)).thenReturn(Optional.of(mockUrlAlias));
+
+            ResponseEntity<UrlAlias> returnedResponseEntity = urlShortenerService.modifyUrl(mockAlias, new UrlAlias(mockModifiedUrl));
+
+            verify(urlShortenerRepository).save(eq(mockModifiedUrlAlias));
+
+            assertEquals(returnedResponseEntity, new ResponseEntity<>(mockModifiedUrlAlias, HttpStatus.OK));
+        }
+
+        @Test
+        void shouldThrowNotFoundIfAliasDoesNotExist() {
+            String mockAlias = "abcd1234";
+            String mockModifiedUrl = "www.yahoo.com";
+
+            when(urlShortenerRepository.findUrlByAlias(mockAlias)).thenReturn(Optional.empty());
+
+            assertThrows(ResponseStatusException.class, () -> urlShortenerService.modifyUrl(mockAlias, new UrlAlias(mockModifiedUrl)));
         }
 
 
     }
 
     @Nested
-    class deleteUrlTests{
-
-    }
-
-    @Nested
-    class modifyUrlTests{
-
-    }
-
-    @Nested
-    class getUrlTests{
+    class getUrlTests {
 
         @Test
         void shouldReturnUrlIfAliasIsFound() {
@@ -104,9 +150,18 @@ class UrlShortenerServiceImplTest extends UrlShortenerServiceImpl {
             Mockito.when(urlShortenerRepository.findUrlByAlias(mockAlias)).thenReturn(Optional.of(mockUrlAlias));
             RedirectView redirectView = urlShortenerService.getUrl(mockAlias);
 
-            Assertions.assertEquals(redirectView.getUrl(), "www.google.com");
+            assertEquals(redirectView.getUrl(), "www.google.com");
         }
 
+        @Test
+        void shouldThrowExceptionIfObjectIsNotFound() {
+            String mockAlias = "abcd1234";
+
+            Mockito.when(urlShortenerRepository.findUrlByAlias(mockAlias)).thenReturn(Optional.empty());
+
+
+            assertThrows(ResponseStatusException.class, () -> urlShortenerService.getUrl(mockAlias));
+        }
 
 
     }
