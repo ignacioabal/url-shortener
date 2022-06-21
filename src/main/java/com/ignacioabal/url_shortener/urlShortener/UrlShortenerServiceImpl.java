@@ -1,7 +1,5 @@
-package com.ignacioabal.url_shortener.services;
+package com.ignacioabal.url_shortener.urlShortener;
 
-import com.ignacioabal.url_shortener.models.UrlAlias;
-import com.ignacioabal.url_shortener.repositories.UrlShortenerRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

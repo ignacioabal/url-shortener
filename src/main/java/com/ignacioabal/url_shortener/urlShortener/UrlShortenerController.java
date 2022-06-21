@@ -1,6 +1,5 @@
-package com.ignacioabal.url_shortener.controllers;
+package com.ignacioabal.url_shortener.urlShortener;
 
-import com.ignacioabal.url_shortener.models.UrlAlias;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.view.RedirectView;
 

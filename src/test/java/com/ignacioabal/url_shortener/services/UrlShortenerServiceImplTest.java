@@ -1,7 +1,9 @@
 package com.ignacioabal.url_shortener.services;
 
-import com.ignacioabal.url_shortener.models.UrlAlias;
-import com.ignacioabal.url_shortener.repositories.UrlShortenerRepository;
+import com.ignacioabal.url_shortener.urlShortener.UrlAlias;
+import com.ignacioabal.url_shortener.urlShortener.UrlShortenerRepository;
+import com.ignacioabal.url_shortener.urlShortener.UrlShortenerService;
+import com.ignacioabal.url_shortener.urlShortener.UrlShortenerServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

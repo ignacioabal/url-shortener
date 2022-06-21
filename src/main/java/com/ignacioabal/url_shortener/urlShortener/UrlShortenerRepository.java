@@ -1,6 +1,5 @@
-package com.ignacioabal.url_shortener.repositories;
+package com.ignacioabal.url_shortener.urlShortener;
 
-import com.ignacioabal.url_shortener.models.UrlAlias;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;

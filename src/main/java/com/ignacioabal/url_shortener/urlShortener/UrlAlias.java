@@ -1,11 +1,12 @@
-package com.ignacioabal.url_shortener.models;
+package com.ignacioabal.url_shortener.urlShortener;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+@Document
 public class UrlAlias {
 
-    @Indexed(unique = true)
     private String url;
 
     @Id
