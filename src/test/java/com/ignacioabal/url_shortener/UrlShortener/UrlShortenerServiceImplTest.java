@@ -14,7 +14,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Optional;
 
@@ -150,9 +149,10 @@ class UrlShortenerServiceImplTest extends UrlShortenerServiceImpl {
             UrlAlias mockUrlAlias = new UrlAlias(mockUrl, mockAlias);
 
             Mockito.when(urlShortenerRepository.findUrlByAlias(mockAlias)).thenReturn(Optional.of(mockUrlAlias));
-            RedirectView redirectView = urlShortenerService.getUrl(mockAlias);
+            UrlAlias urlAlias = urlShortenerService.getUrl(mockAlias).getBody();
 
-            assertEquals(redirectView.getUrl(), "www.google.com");
+            assert urlAlias != null; //Shouldn't be null by logic, but adding this just in case.
+            assertEquals(urlAlias.getUrl(), "www.google.com");
         }
 
         @Test

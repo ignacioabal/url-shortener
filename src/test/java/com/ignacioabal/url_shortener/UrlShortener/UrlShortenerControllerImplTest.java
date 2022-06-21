@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.view.RedirectView;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -46,9 +45,9 @@ class UrlShortenerControllerImplTest {
         void shouldCreateAnAliasWithValidUrl() throws Exception {
             String mockUrl = "www.google.com";
             String mockAlias = "abcd1234";
+            UrlAlias mockCreatedUrlAlias = new UrlAlias(mockUrl, mockAlias);
 
             String mockRequestContent = "{\"url\":\"www.google.com\"}";
-            UrlAlias mockCreatedUrlAlias = new UrlAlias(mockUrl, mockAlias);
 
 
             Mockito.when(urlShortenerService.createUrl(Mockito.any(UrlAlias.class))).thenReturn(new ResponseEntity<>(mockCreatedUrlAlias, HttpStatus.CREATED));
@@ -95,7 +94,6 @@ class UrlShortenerControllerImplTest {
 
 
     }
-
 
     @Nested
     @DisplayName("Tests for deleteUrl Method")
@@ -176,21 +174,22 @@ class UrlShortenerControllerImplTest {
     @DisplayName("Tests for getUrl Method")
     class getUrl {
         @Test
-        void shouldRedirectIfAliasExistsInDB() throws Exception {
+        void shouldReturnIfAliasExistsInDB() throws Exception {
             String mockUrl = "www.google.com";
-            RedirectView mockRedirectView = new RedirectView(mockUrl);
-            mockRedirectView.setStatusCode(HttpStatus.PERMANENT_REDIRECT);
+            String mockAlias = "abcd1234";
+            UrlAlias mockCreatedUrlAlias = new UrlAlias(mockUrl, mockAlias);
 
-            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenReturn(mockRedirectView);
+            Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenReturn(new ResponseEntity<>(mockCreatedUrlAlias, HttpStatus.OK));
 
             mockMvc.perform(get("/abcd1234")
                             .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isPermanentRedirect());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.url").value("www.google.com"))
+                    .andExpect(jsonPath("$.alias").value("abcd1234"));
         }
 
         @Test
         void shouldReturnNotFoundIfResourceNotFound() throws Exception {
-
 
             Mockito.when(urlShortenerService.getUrl(Mockito.anyString())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "No URL Found."));
 

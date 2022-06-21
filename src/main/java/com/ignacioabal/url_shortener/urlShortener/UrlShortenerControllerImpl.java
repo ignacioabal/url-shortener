@@ -3,7 +3,6 @@ package com.ignacioabal.url_shortener.urlShortener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,7 +33,7 @@ public class UrlShortenerControllerImpl implements UrlShortenerController {
 
     @Override
     @GetMapping("/{alias}")
-    public RedirectView getUrl(@PathVariable("alias") String alias, HttpServletRequest request) {
+    public ResponseEntity<UrlAlias> getUrl(@PathVariable("alias") String alias, HttpServletRequest request) {
         return urlShortenerService.getUrl(alias);
     }
 }

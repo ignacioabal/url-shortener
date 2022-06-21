@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Optional;
 
@@ -61,16 +60,14 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
 
 
     @Override
-    public RedirectView getUrl(String alias) {
+    public ResponseEntity<UrlAlias> getUrl(String alias) {
         Optional<UrlAlias> urlAlias = urlShortenerRepository.findUrlByAlias(alias);
 
         if (urlAlias.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No URL Found.");
         }
 
-        RedirectView redirectView = new RedirectView(urlAlias.get().getUrl());
-        redirectView.setStatusCode(HttpStatus.PERMANENT_REDIRECT);
-        return redirectView;
+        return new ResponseEntity<>(urlAlias.get(), HttpStatus.OK);
     }
 
     private String generateAlias() {
