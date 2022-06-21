@@ -15,6 +15,6 @@ public interface UrlShortenerRepository extends MongoRepository<UrlAlias, Long> 
     @Query(value = "{'alias': ?0}", delete = true)
     void deleteUrlByAlias(String alias);
 
-    @Query(value = "'alias': ?0")
+    @Query(value = "'alias': ?0", exists = true)
     boolean existsByAlias(String alias);
 }
