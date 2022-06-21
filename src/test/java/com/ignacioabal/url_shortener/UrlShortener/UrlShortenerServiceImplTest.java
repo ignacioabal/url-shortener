@@ -1,4 +1,4 @@
-package com.ignacioabal.url_shortener.services;
+package com.ignacioabal.url_shortener.UrlShortener;
 
 import com.ignacioabal.url_shortener.urlShortener.UrlAlias;
 import com.ignacioabal.url_shortener.urlShortener.UrlShortenerRepository;
