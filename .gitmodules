@@ -1,0 +1,3 @@
+[submodule "frontend"]
+	path = url_shortener_ui
+	url = https://github.com/ignacioabal/url-shortener-frontend
